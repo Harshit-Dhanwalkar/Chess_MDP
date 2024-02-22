@@ -1,4 +1,5 @@
 #Ganesh was here
+#Harshit was here
 import pygame
 import sys
 
@@ -6,7 +7,7 @@ pygame.init()
 pygame.display.set_caption('Chess')
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
-running = True
+running = Truerotate
 LIGHT_SQUARE = (245, 203, 167)  # LIGHT SQUARES
 DARK_SQUARE = (87, 65, 18)  # DARK SQUARES
 GRID_COLOR = (0, 0, 0)  # GRID COLOR
