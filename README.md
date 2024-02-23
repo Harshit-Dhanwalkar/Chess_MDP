@@ -19,7 +19,7 @@ The goal of this project is to develop an intelligent Chess-playing agent that c
 
 To get started with this project, follow the instructions below:
 
-1. Clone the repository: `git clone https://github.com/your-username/Chess-MDP.git`
+1. Clone the repository: `git clone https://github.com/Harshit-Dhanwalkar/Chess-MDP.git`
 2. Install the required dependencies: `pip install -r requirements.txt`
 3. Run the main script: `Chess.py`
 
