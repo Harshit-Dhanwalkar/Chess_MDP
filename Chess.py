@@ -36,7 +36,7 @@ white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7]
 
 captured_piece_black = []
 
-IMAGE_PATH = r'C:\Users\harsh\OneDrive\Desktop\PYTHONsmallprojects\Chess\Pieces_PNG\svgtopng'
+IMAGE_PATH = r".\Chess\Pieces_PNG\svgtopng'
 
 # Load images for pieces
 black_pieces_images = {
