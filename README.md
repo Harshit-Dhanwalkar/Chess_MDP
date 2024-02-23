@@ -1,7 +1,7 @@
 # Chess_MDP
 MDP & RL project
 
-This Markov's Decision Process and Reinforcement Learning Course Project
+This is Markov's Decision Process and Reinforcement Learning Course Project
 # Chess Automation using MDP, RL, Dynamic Programming, and ML
 
 This repository contains the code for automating the game of Chess using Markov Decision Process (MDP), Reinforcement Learning (RL), Dynamic Programming, and Machine Learning (ML) techniques.
