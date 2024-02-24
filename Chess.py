@@ -38,30 +38,35 @@ white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7]
 
 captured_piece_black = []
 
-def load_image(url):
-    with urllib.request.urlopen(url) as url_response:
-        image_file = io.BytesIO(url_response.read())
-    return pygame.image.load(image_file)
+# def load_image(url):
+#     with urllib.request.urlopen(url) as url_response:
+#         image_file = io.BytesIO(url_response.read())
+#     return pygame.image.load(image_file)
 
-IMAGE_PATH = "https://raw.githubusercontent.com/Harshit-Dhanwalkar/Chess_MDP/main/Pieces_PNG/svgtopng"
+def load_image(img_name):
+    IMAGE_DIR = "./Pieces_PNG/"
+    img_path = IMAGE_DIR + img_name
+    return pygame.image.load(img_path)
+
+# IMAGE_PATH = "./Pieces_PNG"
 
 # Load images for pieces
 black_pieces_images = {
-    'pawn': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bP.png'), (80, 80)),
-    'rook': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bR.png'), (80, 80)),
-    'knight': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bN.png'), (80, 80)),
-    'bishop': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bB.png'), (80, 80)),
-    'queen': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bQ.png'), (80, 80)),
-    'king': pygame.transform.scale(load_image(f'{IMAGE_PATH}/bK.png'), (80, 80)),
+    'pawn': pygame.transform.scale(load_image('bP.png'), (80, 80)),
+    'rook': pygame.transform.scale(load_image('bR.png'), (80, 80)),
+    'knight': pygame.transform.scale(load_image('bN.png'), (80, 80)),
+    'bishop': pygame.transform.scale(load_image('bB.png'), (80, 80)),
+    'queen': pygame.transform.scale(load_image('bQ.png'), (80, 80)),
+    'king': pygame.transform.scale(load_image('bK.png'), (80, 80)),
 }
 
 white_pieces_images = {
-    'pawn': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wP.png'), (80, 80)),
-    'rook': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wR.png'), (80, 80)),
-    'knight': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wN.png'), (80, 80)),
-    'bishop': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wB.png'), (80, 80)),
-    'queen': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wQ.png'), (80, 80)),
-    'king': pygame.transform.scale(load_image(f'{IMAGE_PATH}/wK.png'), (80, 80)),
+    'pawn': pygame.transform.scale(load_image('wP.png'), (80, 80)),
+    'rook': pygame.transform.scale(load_image('wR.png'), (80, 80)),
+    'knight': pygame.transform.scale(load_image('wN.png'), (80, 80)),
+    'bishop': pygame.transform.scale(load_image('wB.png'), (80, 80)),
+    'queen': pygame.transform.scale(load_image('wQ.png'), (80, 80)),
+    'king': pygame.transform.scale(load_image('wK.png'), (80, 80)),
 }
 
 # Add a dictionary to store the state of each piece
