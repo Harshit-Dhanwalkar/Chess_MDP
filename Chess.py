@@ -1,5 +1,6 @@
 #Ganesh was here
 #Harshit was here
+
 import pygame
 import sys
 import urllib.request
@@ -31,24 +32,22 @@ white_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 
                 'bishop', 'bishop', 'queen', 'king']
 
 # Assuming these are your initial piece positions
-black_location = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7], [0, 0], [0, 7], [0, 1], [0, 6], [0, 2],
-                  [0, 5], [0, 3], [0, 4]]
-white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [7, 0], [7, 7], [7, 1], [7, 6], [7, 2],
-                  [7, 5], [7, 3], [7, 4]]
+black_location = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7],
+                [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]]
+white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], 
+                  [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4]]
 
 captured_piece_black = []
 
-# def load_image(url):
-#     with urllib.request.urlopen(url) as url_response:
-#         image_file = io.BytesIO(url_response.read())
-#     return pygame.image.load(image_file)
-
+# Load images for pieces
 def load_image(img_name):
     IMAGE_DIR = "./Pieces_PNG/"
     img_path = IMAGE_DIR + img_name
-    return pygame.image.load(img_path)
-
-# IMAGE_PATH = "./Pieces_PNG"
+    try:
+        return pygame.image.load(img_path)
+    except pygame.error as e:
+        print(f"Error loading image {img_name}: {e}")
+        raise SystemExit
 
 # Load images for pieces
 black_pieces_images = {
@@ -139,8 +138,7 @@ def draw_pieces():
             font = pygame.font.Font(None, 20)
             text = font.render(piece_state[piece_key], True, (255, 255, 255))
             screen.blit(text, (position[1] * 100 + 30, position[0] * 100 + 70))
-
-# draw valid moves
+            
 def check_options(pieces, location, turn):
     valid_moves = []
     for i in range(len(pieces)):
@@ -164,9 +162,10 @@ def check_options(pieces, location, turn):
                     valid_moves.append([location[i][0] + 2 * forward_dir, location[i][1]])
 
             # Check diagonal captures
-            if [location[i][0] + forward_dir, location[i][1] - 1] in location and piece_color != opponent_color:
+            # Ensure opponent pieces are correctly identified
+            if [location[i][0] + forward_dir, location[i][1] - 1] in location and pieces[location.index([location[i][0] + forward_dir, location[i][1] - 1])] != piece_color:
                 valid_moves.append([location[i][0] + forward_dir, location[i][1] - 1])
-            if [location[i][0] + forward_dir, location[i][1] + 1] in location and piece_color != opponent_color:
+            if [location[i][0] + forward_dir, location[i][1] + 1] in location and pieces[location.index([location[i][0] + forward_dir, location[i][1] + 1])] != piece_color:
                 valid_moves.append([location[i][0] + forward_dir, location[i][1] + 1])
 
             # Add state for pawn
@@ -260,6 +259,9 @@ while running:
                     # Reset the highlighted square and valid moves after placing the piece
                     highlighted_square = None
                     selected_valid_moves = []
+
+                    # Switch turns
+                    turn_step = 1 - turn_step
 
     # Highlight the selected piece square
     if highlighted_square:
