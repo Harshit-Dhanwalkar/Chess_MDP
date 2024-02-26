@@ -138,45 +138,148 @@ def draw_pieces():
             font = pygame.font.Font(None, 20)
             text = font.render(piece_state[piece_key], True, (255, 255, 255))
             screen.blit(text, (position[1] * 100 + 30, position[0] * 100 + 70))
-            
+
+
+# Function to get valid moves for a pawn
+def get_pawn_moves(location, forward_dir, piece_color, opponent_color):
+    valid_moves = []
+
+    # Check one square forward
+    if [location[0] + forward_dir, location[1]] not in location:
+        valid_moves.append([location[0] + forward_dir, location[1]])
+
+    # Check two squares forward if it's the pawn's first move
+    if (location[0] == 6 and piece_color == 'white') or (location[0] == 1 and piece_color == 'black'):
+        if [location[0] + 2 * forward_dir, location[1]] not in location:
+            valid_moves.append([location[0] + 2 * forward_dir, location[1]])
+
+    # Check diagonal captures
+    if [location[0] + forward_dir, location[1] - 1] in location and piece_color != opponent_color:
+        valid_moves.append([location[0] + forward_dir, location[1] - 1])
+    if [location[0] + forward_dir, location[1] + 1] in location and piece_color != opponent_color:
+        valid_moves.append([location[0] + forward_dir, location[1] + 1])
+
+    # Add state for pawn
+    piece_key = (location[0], location[1], 'pawn')
+    if (location[0] == 6 and piece_color == 'white') or (location[0] == 1 and piece_color == 'black'):
+        if piece_key not in piece_state:
+            piece_state[piece_key] = "Not Moved"
+    elif piece_key in piece_state:
+        piece_state[piece_key] = "Moved"
+
+    return valid_moves
+
+# Function to get valid moves for a rook
+def get_rook_moves(location, piece_color, opponent_color):
+    valid_moves = []
+
+    # Check horizontally
+    for i in range(-1, 2, 2):
+        row, col = location[0], location[1] + i
+        while 0 <= col < 8:
+            if [row, col] in location:
+                break
+            valid_moves.append([row, col])
+            col += i
+
+    # Check vertically
+    for i in range(-1, 2, 2):
+        row, col = location[0] + i, location[1]
+        while 0 <= row < 8:
+            if [row, col] in location:
+                break
+            valid_moves.append([row, col])
+            row += i
+
+    return valid_moves
+
+# Function to get valid moves for a knight
+def get_knight_moves(location, piece_color, opponent_color):
+    valid_moves = []
+
+    moves = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+
+    for move in moves:
+        row, col = location[0] + move[0], location[1] + move[1]
+        if 0 <= row < 8 and 0 <= col < 8 and [row, col] not in location:
+            valid_moves.append([row, col])
+
+    return valid_moves
+
+# Function to get valid moves for a bishop
+def get_bishop_moves(location, piece_color, opponent_color):
+    valid_moves = []
+
+    # Check diagonally
+    for i in range(-1, 2, 2):
+        for j in range(-1, 2, 2):
+            row, col = location[0] + i, location[1] + j
+            while 0 <= row < 8 and 0 <= col < 8:
+                if [row, col] in location:
+                    break
+                valid_moves.append([row, col])
+                row += i
+                col += j
+
+    return valid_moves
+
+# Function to get valid moves for a queen
+def get_queen_moves(location, piece_color, opponent_color):
+    rook_moves = get_rook_moves(location, piece_color, opponent_color)
+    bishop_moves = get_bishop_moves(location, piece_color, opponent_color)
+    return rook_moves + bishop_moves
+
+# Function to get valid moves for a king
+def get_king_moves(location, piece_color, opponent_color):
+    valid_moves = []
+
+    moves = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+    for move in moves:
+        row, col = location[0] + move[0], location[1] + move[1]
+        if 0 <= row < 8 and 0 <= col < 8 and [row, col] not in location:
+            valid_moves.append([row, col])
+
+    return valid_moves
+
+# Modify the check_options function to call specific piece functions
 def check_options(pieces, location, turn):
     valid_moves = []
+
+    piece_color = 'white' if turn == 0 else 'black'
+    opponent_color = 'black' if turn == 0 else 'white'
+
     for i in range(len(pieces)):
-        piece_color = 'white' if turn == 0 else 'black'
-        opponent_color = 'black' if turn == 0 else 'white'
+        piece_type = pieces[i]
 
-        if pieces[i] == 'pawn':
+        if piece_type == 'pawn':
             forward_dir = -1 if piece_color == 'white' else 1
+            valid_moves += get_pawn_moves(location[i], forward_dir, piece_color, opponent_color)
 
-            # Check one square forward
-            if [location[i][0] + forward_dir, location[i][1]] not in location:
-                valid_moves.append([location[i][0] + forward_dir, location[i][1]])
+        elif piece_type == 'rook':
+            valid_moves += get_rook_moves(location[i], piece_color, opponent_color)
 
-            # Check two squares forward if it's the pawn's first move
-            if (
-                location[i][0] == 6 and piece_color == 'white'
-            ) or (
-                location[i][0] == 1 and piece_color == 'black'
-            ):
-                if [location[i][0] + 2 * forward_dir, location[i][1]] not in location:
-                    valid_moves.append([location[i][0] + 2 * forward_dir, location[i][1]])
+        elif piece_type == 'knight':
+            valid_moves += get_knight_moves(location[i], piece_color, opponent_color)
 
-            # Check diagonal captures
-            # Ensure opponent pieces are correctly identified
-            if [location[i][0] + forward_dir, location[i][1] - 1] in location and pieces[location.index([location[i][0] + forward_dir, location[i][1] - 1])] != piece_color:
-                valid_moves.append([location[i][0] + forward_dir, location[i][1] - 1])
-            if [location[i][0] + forward_dir, location[i][1] + 1] in location and pieces[location.index([location[i][0] + forward_dir, location[i][1] + 1])] != piece_color:
-                valid_moves.append([location[i][0] + forward_dir, location[i][1] + 1])
+        elif piece_type == 'bishop':
+            valid_moves += get_bishop_moves(location[i], piece_color, opponent_color)
 
-            # Add state for pawn
-            piece_key = (location[i][0], location[i][1], 'pawn')
-            if (
-                (location[i][0] == 6 and piece_color == 'white')
-                or (location[i][0] == 1 and piece_color == 'black')
-            ) and piece_key not in piece_state:
-                piece_state[piece_key] = "Not Moved"
-            elif piece_key in piece_state:
-                piece_state[piece_key] = "Moved"
+        elif piece_type == 'queen':
+            valid_moves += get_queen_moves(location[i], piece_color, opponent_color)
+
+        elif piece_type == 'king':
+            valid_moves += get_king_moves(location[i], piece_color, opponent_color)
+
+        # Add state for pawn
+        piece_key = (location[i][0], location[i][1], piece_type)
+        if (
+            (location[i][0] == 6 and piece_color == 'white')
+            or (location[i][0] == 1 and piece_color == 'black')
+        ) and piece_key not in piece_state:
+            piece_state[piece_key] = "Not Moved"
+        elif piece_key in piece_state:
+            piece_state[piece_key] = "Moved"
 
     return valid_moves
 
