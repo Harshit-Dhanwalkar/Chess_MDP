@@ -1,5 +1,6 @@
 #Ganesh was here
 #Harshit was here
+#new
 
 import pygame
 import sys
@@ -37,6 +38,10 @@ black_location = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7]
 white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], 
                   [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4]]
 
+# Add a dictionary to store the state of each piece
+# Key format: (row, column, piece_type, identifier)
+piece_state = {}
+
 captured_piece_black = []
 
 # Load images for pieces
@@ -68,9 +73,11 @@ white_pieces_images = {
     'king': pygame.transform.scale(load_image('wK.png'), (80, 80)),
 }
 
-# Add a dictionary to store the state of each piece
-# Key format: (row, column, piece_type)
-piece_state = {}
+pygame.init()
+screen = pygame.display.set_mode((800, 800)) # Set the dimensions of the screen
+pygame.display.set_caption('Chess') # Set the title of the window
+clock = pygame.time.Clock() # Create a clock object to control the frame rate
+running = True # A variable to control the game loop
 
 def draw_chess_board():
     pygame.draw.rect(screen, DARK_SQUARE, [0, 0, 800, 800])
