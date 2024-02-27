@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-# Ganesh was here
-# Harshit was here again for 3rd time 
-=======
 #Ganesh was here
-#Harshit was here
-#new
->>>>>>> 3e3cddac1aa285f93849be2610b26b0887faa174
+#Harshit was here 
 
 import pygame
 import sys
@@ -19,13 +13,6 @@ LIGHT_SQUARE = (245, 203, 167)
 DARK_SQUARE = (87, 65, 18)
 GRID_COLOR = (0, 0, 0)
 
-# Assuming these are your piece lists
-black_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn',
-                'rook', 'rook', 'knight', 'knight', 'bishop', 'bishop', 'queen', 'king']
-
-white_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn',
-                'rook', 'rook', 'knight', 'knight', 'bishop', 'bishop', 'queen', 'king']
-
 # Assuming these are your initial piece positions
 black_location = [
     ['pawnB1', 1, 0], ['pawnB2', 1, 1], ['pawnB3', 1, 2], ['pawnB4', 1, 3],
@@ -34,20 +21,19 @@ black_location = [
     ['bishopB1', 0, 2], ['bishopB2', 0, 5], ['queenB1', 0, 3], ['kingB1', 0, 4]
 ]
 
-<<<<<<< HEAD
 white_location = [
     ['pawnW1', 6, 0], ['pawnW2', 6, 1], ['pawnW3', 6, 2], ['pawnW4', 6, 3],
     ['pawnW5', 6, 4], ['pawnW6', 6, 5], ['pawnW7', 6, 6], ['pawnW8', 6, 7],
     ['rookW1', 7, 0], ['rookW2', 7, 7], ['knightW1', 7, 1], ['knightW2', 7, 6],
     ['bishopW1', 7, 2], ['bishopW2', 7, 5], ['queenW1', 7, 3], ['kingW1', 7, 4]
 ]
-=======
+
 # Add a dictionary to store the state of each piece
 # Key format: (row, column, piece_type, identifier)
 piece_state = {}
 
 captured_piece_black = []
->>>>>>> 3e3cddac1aa285f93849be2610b26b0887faa174
+captured_piece_white = []
 
 def load_image(img_name):
     IMAGE_DIR = "./Pieces_PNG/"
@@ -78,15 +64,6 @@ white_pieces_images = {
     'king': pygame.transform.scale(load_image('wK.png'), (80, 80)),
 }
 
-<<<<<<< HEAD
-=======
-pygame.init()
-screen = pygame.display.set_mode((800, 800)) # Set the dimensions of the screen
-pygame.display.set_caption('Chess') # Set the title of the window
-clock = pygame.time.Clock() # Create a clock object to control the frame rate
-running = True # A variable to control the game loop
-
->>>>>>> 3e3cddac1aa285f93849be2610b26b0887faa174
 def draw_chess_board():
     pygame.draw.rect(screen, DARK_SQUARE, [0, 0, 800, 800])
     pygame.draw.line(screen, 'black', (801, 0), (801, 800), 4)
