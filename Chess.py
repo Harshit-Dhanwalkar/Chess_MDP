@@ -1,55 +1,51 @@
-#Ganesh was here
-#Harshit was here
+# Ganesh was here
+# Harshit was here again for 3rd time 
 
 import pygame
 import sys
-import urllib.request
-import io
 
 pygame.init()
-pygame.display.set_caption('Chess')
 screen = pygame.display.set_mode((800, 800))
+pygame.display.set_caption('Chess')
 clock = pygame.time.Clock()
 running = True
-LIGHT_SQUARE = (245, 203, 167)  # LIGHT SQUARES
-DARK_SQUARE = (87, 65, 18)  # DARK SQUARES
-GRID_COLOR = (0, 0, 0)  # GRID COLOR
-
-turn_step = 0
-selection = 100
-valid_moves = []
-
-# Add a variable to store the highlighted square position
-highlighted_square = None
-
-# Add a variable to store the valid moves for the selected piece
-selected_valid_moves = []
+LIGHT_SQUARE = (245, 203, 167)
+DARK_SQUARE = (87, 65, 18)
+GRID_COLOR = (0, 0, 0)
 
 # Assuming these are your piece lists
-black_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'rook', 'rook', 'knight', 'knight',
-                'bishop', 'bishop', 'queen', 'king']
-white_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'rook', 'rook', 'knight', 'knight',
-                'bishop', 'bishop', 'queen', 'king']
+black_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn',
+                'rook', 'rook', 'knight', 'knight', 'bishop', 'bishop', 'queen', 'king']
+
+white_pieces = ['pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn', 'pawn',
+                'rook', 'rook', 'knight', 'knight', 'bishop', 'bishop', 'queen', 'king']
 
 # Assuming these are your initial piece positions
-black_location = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7],
-                [0, 0], [0, 7], [0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4]]
-white_location = [[6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], 
-                  [7, 0], [7, 7], [7, 1], [7, 6], [7, 2], [7, 5], [7, 3], [7, 4]]
+black_location = [
+    ['pawnB1', 1, 0], ['pawnB2', 1, 1], ['pawnB3', 1, 2], ['pawnB4', 1, 3],
+    ['pawnB5', 1, 4], ['pawnB6', 1, 5], ['pawnB7', 1, 6], ['pawnB8', 1, 7],
+    ['rookB1', 0, 0], ['rookB2', 0, 7], ['knightB1', 0, 1], ['knightB2', 0, 6],
+    ['bishopB1', 0, 2], ['bishopB2', 0, 5], ['queenB1', 0, 3], ['kingB1', 0, 4]
+]
 
-captured_piece_black = []
+white_location = [
+    ['pawnW1', 6, 0], ['pawnW2', 6, 1], ['pawnW3', 6, 2], ['pawnW4', 6, 3],
+    ['pawnW5', 6, 4], ['pawnW6', 6, 5], ['pawnW7', 6, 6], ['pawnW8', 6, 7],
+    ['rookW1', 7, 0], ['rookW2', 7, 7], ['knightW1', 7, 1], ['knightW2', 7, 6],
+    ['bishopW1', 7, 2], ['bishopW2', 7, 5], ['queenW1', 7, 3], ['kingW1', 7, 4]
+]
 
-# Load images for pieces
 def load_image(img_name):
     IMAGE_DIR = "./Pieces_PNG/"
     img_path = IMAGE_DIR + img_name
+    print(f"Loading image: {img_path}")
     try:
         return pygame.image.load(img_path)
     except pygame.error as e:
         print(f"Error loading image {img_name}: {e}")
         raise SystemExit
 
-# Load images for pieces
+
 black_pieces_images = {
     'pawn': pygame.transform.scale(load_image('bP.png'), (80, 80)),
     'rook': pygame.transform.scale(load_image('bR.png'), (80, 80)),
@@ -68,312 +64,181 @@ white_pieces_images = {
     'king': pygame.transform.scale(load_image('wK.png'), (80, 80)),
 }
 
-# Add a dictionary to store the state of each piece
-# Key format: (row, column, piece_type)
-piece_state = {}
-
 def draw_chess_board():
     pygame.draw.rect(screen, DARK_SQUARE, [0, 0, 800, 800])
     pygame.draw.line(screen, 'black', (801, 0), (801, 800), 4)
     pygame.draw.line(screen, 'black', (0, 801), (800, 801), 4)
+
     for i in range(8):
         for j in range(8):
             square_rect = pygame.Rect(j * 100, i * 100, 100, 100)
-            pygame.draw.rect(screen, GRID_COLOR, square_rect, 1)  # Add this line to draw the border
-
-            # Highlight the square with a red border if it matches the selected piece
-            if highlighted_square and square_rect.collidepoint(highlighted_square):
-                pygame.draw.rect(screen, (255, 0, 0), square_rect, 5)
-            else:
-                pygame.draw.rect(screen, LIGHT_SQUARE if (i + j) % 2 == 0 else DARK_SQUARE, square_rect)
+            pygame.draw.rect(screen, GRID_COLOR, square_rect, 1)
+            pygame.draw.rect(screen, LIGHT_SQUARE if (i + j) % 2 == 0 else DARK_SQUARE, square_rect)
 
     pygame.draw.rect(screen, DARK_SQUARE, [0, 800, 800, 100])
     pygame.draw.rect(screen, DARK_SQUARE, [800, 0, 200, 800])
 
-    status_text = ['White to move', 'Black to move', 'White wins', 'Black wins', 'Stalemate', 'Checkmate', 'Draw']
-
-    if turn_step == 0:
-        font = pygame.font.Font(None, 36)  # adjust the font size
-        text = font.render(status_text[turn_step], True, (255, 255, 255))
-        screen.blit(text, (810, 50))
-
-    elif turn_step == 1:
-        font = pygame.font.Font(None, 36)
-        text = font.render(status_text[turn_step], True, (255, 255, 255))
-        screen.blit(text, (810, 50))
-
-    elif turn_step == 2:
-        text = pygame.font.Font(None, 36).render(status_text[turn_step], True, 'black')
-        screen.blit(text, (810, 50))
-    elif turn_step == 3:
-        text = pygame.font.Font(None, 36).render(status_text[turn_step], True, 'black')
-        screen.blit(text, (810, 50))
-
-    for i in range(8):
-        pygame.draw.line(screen, 'black', (i * 100, 0), (i * 100, 800), 2)
-        pygame.draw.line(screen, 'black', (0, i * 100), (800, i * 100), 2)
-
-def highlight_square(screen, position, color):
-    rect = pygame.Rect(position[1] * 100, position[0] * 100, 100, 100)
-    pygame.draw.rect(screen, color, rect, 5)
-
-def draw_valid_moves(screen, valid_moves, color):
-    for move in valid_moves:
-        rect = pygame.Rect(move[1] * 100, move[0] * 100, 100, 100)
-        pygame.draw.rect(screen, color, rect, 5)
-
-# draw chess pieces
+piece_state = {}
 def draw_pieces():
-    for piece, position in zip(black_pieces, black_location):
-        image = black_pieces_images[f'{piece.lower()}']
-        screen.blit(image, (position[1] * 100 + 10, position[0] * 100 + 10))
+    for name, row, col in black_location:
+        piece = name[:-2]  # Extract piece type from name
+        image = black_pieces_images.get(f'{piece.lower()}')  # Convert to lowercase
+        if image:
+            x = int(col * 100 + 10)
+            y = int(row * 100 + 10)
+            screen.blit(image, (x, y))
 
-    for piece, position in zip(white_pieces, white_location):
-        image = white_pieces_images[f'{piece.lower()}']
-        screen.blit(image, (position[1] * 100 + 10, position[0] * 100 + 10))
+    for name, row, col in white_location:
+        piece = name[:-2]  # Extract piece type from name
+        image = white_pieces_images.get(f'{piece.lower()}')  # Convert to lowercase
+        if image:
+            x = int(col * 100 + 10)
+            y = int(row * 100 + 10)
+            screen.blit(image, (x, y))
 
-        # Display state text on the pieces
-        piece_key = (position[0], position[1], piece.lower())
-        if piece_key in piece_state:
-            font = pygame.font.Font(None, 20)
-            text = font.render(piece_state[piece_key], True, (255, 255, 255))
-            screen.blit(text, (position[1] * 100 + 30, position[0] * 100 + 70))
+            # Display state text on the pieces
+            piece_key = (row, col, piece.lower())
+            if piece_key in piece_state:
+                font = pygame.font.Font(None, 20)
+                text = font.render(piece_state[piece_key], True, (255, 255, 255))
+                screen.blit(text, (x + 20, y + 60))
 
+def is_valid_pawn_move(start, end, color):
+    row_start, col_start = start
+    row_end, col_end = end
 
-# Function to get valid moves for a pawn
-def get_pawn_moves(location, forward_dir, piece_color, opponent_color):
-    valid_moves = []
+    if color == 'white':
+        # White pawn moves forward one square
+        return row_end == row_start - 1 and col_end == col_start
+    elif color == 'black':
+        # Black pawn moves forward one square
+        return row_end == row_start + 1 and col_end == col_start
 
-    # Check one square forward
-    if [location[0] + forward_dir, location[1]] not in location:
-        valid_moves.append([location[0] + forward_dir, location[1]])
+    return False
 
-    # Check two squares forward if it's the pawn's first move
-    if (location[0] == 6 and piece_color == 'white') or (location[0] == 1 and piece_color == 'black'):
-        if [location[0] + 2 * forward_dir, location[1]] not in location:
-            valid_moves.append([location[0] + 2 * forward_dir, location[1]])
+def is_valid_rook_move(start, end):
+    row_start, col_start = start
+    row_end, col_end = end
 
-    # Check diagonal captures
-    if [location[0] + forward_dir, location[1] - 1] in location and piece_color != opponent_color:
-        valid_moves.append([location[0] + forward_dir, location[1] - 1])
-    if [location[0] + forward_dir, location[1] + 1] in location and piece_color != opponent_color:
-        valid_moves.append([location[0] + forward_dir, location[1] + 1])
+    # Rook moves horizontally or vertically
+    return row_start == row_end or col_start == col_end
 
-    # Add state for pawn
-    piece_key = (location[0], location[1], 'pawn')
-    if (location[0] == 6 and piece_color == 'white') or (location[0] == 1 and piece_color == 'black'):
-        if piece_key not in piece_state:
-            piece_state[piece_key] = "Not Moved"
-    elif piece_key in piece_state:
-        piece_state[piece_key] = "Moved"
+def is_valid_knight_move(start, end):
+    row_diff = abs(end[0] - start[0])
+    col_diff = abs(end[1] - start[1])
 
-    return valid_moves
+    # Knight moves in an L-shape
+    return (row_diff == 2 and col_diff == 1) or (row_diff == 1 and col_diff == 2)
 
-# Function to get valid moves for a rook
-def get_rook_moves(location, piece_color, opponent_color):
-    valid_moves = []
+def is_valid_bishop_move(start, end):
+    row_diff = abs(end[0] - start[0])
+    col_diff = abs(end[1] - start[1])
 
-    # Check horizontally
-    for i in range(-1, 2, 2):
-        row, col = location[0], location[1] + i
-        while 0 <= col < 8:
-            if [row, col] in location:
-                break
-            valid_moves.append([row, col])
-            col += i
+    # Bishop moves diagonally
+    return row_diff == col_diff
 
-    # Check vertically
-    for i in range(-1, 2, 2):
-        row, col = location[0] + i, location[1]
-        while 0 <= row < 8:
-            if [row, col] in location:
-                break
-            valid_moves.append([row, col])
-            row += i
+def is_valid_queen_move(start, end):
+    row_start, col_start = start
+    row_diff = abs(end[0] - row_start)
+    col_diff = abs(end[1] - col_start)
 
-    return valid_moves
+    # Queen combines rook and bishop moves
+    return (row_start == end[0] or col_start == end[1]) or (row_diff == col_diff)
 
-# Function to get valid moves for a knight
-def get_knight_moves(location, piece_color, opponent_color):
-    valid_moves = []
+def is_valid_king_move(start, end):
+    row_diff = abs(end[0] - start[0])
+    col_diff = abs(end[1] - start[1])
 
-    moves = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+    # King moves one square in any direction
+    return row_diff <= 1 and col_diff <= 1
 
-    for move in moves:
-        row, col = location[0] + move[0], location[1] + move[1]
-        if 0 <= row < 8 and 0 <= col < 8 and [row, col] not in location:
-            valid_moves.append([row, col])
-
-    return valid_moves
-
-# Function to get valid moves for a bishop
-def get_bishop_moves(location, piece_color, opponent_color):
-    valid_moves = []
-
-    # Check diagonally
-    for i in range(-1, 2, 2):
-        for j in range(-1, 2, 2):
-            row, col = location[0] + i, location[1] + j
-            while 0 <= row < 8 and 0 <= col < 8:
-                if [row, col] in location:
-                    break
-                valid_moves.append([row, col])
-                row += i
-                col += j
-
-    return valid_moves
-
-# Function to get valid moves for a queen
-def get_queen_moves(location, piece_color, opponent_color):
-    rook_moves = get_rook_moves(location, piece_color, opponent_color)
-    bishop_moves = get_bishop_moves(location, piece_color, opponent_color)
-    return rook_moves + bishop_moves
-
-# Function to get valid moves for a king
-def get_king_moves(location, piece_color, opponent_color):
-    valid_moves = []
-
-    moves = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-
-    for move in moves:
-        row, col = location[0] + move[0], location[1] + move[1]
-        if 0 <= row < 8 and 0 <= col < 8 and [row, col] not in location:
-            valid_moves.append([row, col])
-
-    return valid_moves
-
-# Modify the check_options function to call specific piece functions
-def check_options(pieces, location, turn):
-    valid_moves = []
-
-    piece_color = 'white' if turn == 0 else 'black'
-    opponent_color = 'black' if turn == 0 else 'white'
-
-    for i in range(len(pieces)):
-        piece_type = pieces[i]
-
-        if piece_type == 'pawn':
-            forward_dir = -1 if piece_color == 'white' else 1
-            valid_moves += get_pawn_moves(location[i], forward_dir, piece_color, opponent_color)
-
-        elif piece_type == 'rook':
-            valid_moves += get_rook_moves(location[i], piece_color, opponent_color)
-
-        elif piece_type == 'knight':
-            valid_moves += get_knight_moves(location[i], piece_color, opponent_color)
-
-        elif piece_type == 'bishop':
-            valid_moves += get_bishop_moves(location[i], piece_color, opponent_color)
-
-        elif piece_type == 'queen':
-            valid_moves += get_queen_moves(location[i], piece_color, opponent_color)
-
-        elif piece_type == 'king':
-            valid_moves += get_king_moves(location[i], piece_color, opponent_color)
-
-        # Add state for pawn
-        piece_key = (location[i][0], location[i][1], piece_type)
-        if (
-            (location[i][0] == 6 and piece_color == 'white')
-            or (location[i][0] == 1 and piece_color == 'black')
-        ) and piece_key not in piece_state:
-            piece_state[piece_key] = "Not Moved"
-        elif piece_key in piece_state:
-            piece_state[piece_key] = "Moved"
-
-    return valid_moves
-
-
-fps = 60
 while running:
-    clock.tick(fps)
-    screen.fill('white')
+    clock.tick(60)
+    screen.fill((255, 255, 255))
     draw_chess_board()
-
-    # Draw pieces after drawing the chessboard
     draw_pieces()
+    pygame.display.flip()
 
-    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            click_coords = event.pos
 
-            # Check if the clicked position is on a piece
-            if turn_step == 0:
-                for piece_position in white_location:
-                    piece_rect = pygame.Rect(piece_position[1] * 100, piece_position[0] * 100, 100, 100)
+############################################################################################################
+# Example usage for pawn
+start_position = (6, 3)
+end_position = (6, 4)  # Intentionally incorrect move
+piece_type = 'pawn'
+color = 'white'
 
-                    if piece_rect.collidepoint(click_coords):
-                        # Highlight the square of the clicked piece
-                        highlighted_square = (piece_position[0], piece_position[1])
+if is_valid_pawn_move(start_position, end_position, color):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-                        # Get valid moves for the selected piece
-                        selected_valid_moves = check_options(white_pieces, white_location, 0)
-                        break  # Break to avoid highlighting multiple squares if pieces overlap
+# Example usage for knight
+start_position = (7, 6)
+end_position = (5, 6)  # Intentionally incorrect move
+piece_type = 'knight'
 
-            elif turn_step == 1:
-                for piece_position in black_location:
-                    piece_rect = pygame.Rect(piece_position[1] * 100, piece_position[0] * 100, 100, 100)
+if is_valid_knight_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-                    if piece_rect.collidepoint(click_coords):
-                        # Highlight the square of the clicked piece
-                        highlighted_square = (piece_position[0], piece_position[1])
+# Example usage for rook
+start_position = (0, 0)
+end_position = (2, 0)
+piece_type = 'rook'
 
-                        # Get valid moves for the selected piece
-                        selected_valid_moves = check_options(black_pieces, black_location, 1)
-                        break  # Break to avoid highlighting multiple squares if pieces overlap
-            else:
-                # Reset the highlighted square and valid moves if the click is not on any piece
-                highlighted_square = None
-                selected_valid_moves = []
+if is_valid_rook_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-        if event.type == pygame.MOUSEBUTTONUP:
-            release_coords = event.pos
+# Example usage for knight
+start_position = (7, 6)
+end_position = (5, 5)
+piece_type = 'knight'
 
-            # Check if the release position is within the chessboard
-            if 0 <= release_coords[0] < 800 and 0 <= release_coords[1] < 800:
-                # Calculate the row and column of the released position
-                row = release_coords[1] // 100
-                col = release_coords[0] // 100
+if is_valid_knight_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-                # Check if the release position is a valid move
-                if [row, col] in selected_valid_moves:
-                    # Update the position of the selected piece
-                    if turn_step == 0:
-                        try:
-                            piece_index = white_location.index([highlighted_square[0], highlighted_square[1]])
-                            white_location[piece_index] = [row, col]
-                        except ValueError:
-                            # Handle the case where the position is not found in white_location
-                            print(f"Error: Selected piece {highlighted_square} not found in white_location")
-                            print("Current white_location:", white_location)
-                    elif turn_step == 1:
-                        try:
-                            piece_index = black_location.index([highlighted_square[0], highlighted_square[1]])
-                            black_location[piece_index] = [row, col]
-                        except ValueError:
-                            # Handle the case where the position is not found in black_location
-                            print(f"Error: Selected piece {highlighted_square} not found in black_location")
-                            print("Current black_location:", black_location)
+# Example usage for bishop
+start_position = (2, 0)
+end_position = (0, 2)
+piece_type = 'bishop'
 
-                    # Reset the highlighted square and valid moves after placing the piece
-                    highlighted_square = None
-                    selected_valid_moves = []
+if is_valid_bishop_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-                    # Switch turns
-                    turn_step = 1 - turn_step
+# Example usage for queen
+start_position = (0, 3)
+end_position = (3, 0)
+piece_type = 'queen'
 
-    # Highlight the selected piece square
-    if highlighted_square:
-        highlight_square(screen, highlighted_square, (255, 0, 0))
+if is_valid_queen_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
 
-    # Highlight valid moves
-    draw_valid_moves(screen, selected_valid_moves, (0, 255, 0))
+# Example usage for king
+start_position = (0, 4)
+end_position = (1, 3)
+piece_type = 'king'
 
-    pygame.display.flip()
+if is_valid_king_move(start_position, end_position):
+    print(f"Valid move for {color} {piece_type}")
+else:
+    print(f"Invalid move for {color} {piece_type}")
+
+
+############################################################################################################
+
 
 pygame.quit()
 sys.exit()
