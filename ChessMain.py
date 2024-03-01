@@ -11,6 +11,8 @@ import pygame as p
 from ChessEngine import GameState
 from ChessEngine import Move
 import pygame as p
+import requests
+import io
 
 WIDTH = HEIGHT = 620 #512 #400
 DIMENSION = 8 #8 for a chess board
@@ -24,9 +26,18 @@ Initialize a global dictionary of images. This will be called exactly once in th
 def loadImages():
     pieces = ['wP', 'wR', 'wN', 'wB', 'wQ', 'wK', 'bP', 'bR', 'bN', 'bB', 'bQ', 'bK']
     for piece in pieces:
+        url = f"https://raw.githubusercontent.com/Harshit-Dhanwalkar/Chess_MDP/main/images/{piece}.png"
+        response = requests.get(url)
+        image = p.image.load(io.BytesIO(response.content))
+        IMAGES[piece] = p.transform.scale(image, (SQ_SIZE, SQ_SIZE))
+'''
+def loadImages():
+    pieces = ['wP', 'wR', 'wN', 'wB', 'wQ', 'wK', 'bP', 'bR', 'bN', 'bB', 'bQ', 'bK']
+    for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("./images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
         # Note: we can access an image by saying 'IMAGES['wp']'
-
+'''
+        
 '''
 The main driver for our code. This will handle user input and updating the graphics
 '''
@@ -62,13 +73,13 @@ def main():
                     playerClicks.append(sqSelected) # append for both 1st and 2nd clicks
         if len(playerClicks) == 2:  # after 2nd click
             move = Move(playerClicks[0], playerClicks[1], gs.board)
-            print(move.getChessNotation())
-            if move in validMoves:  # Check if the move is valid
-                gs.makeMove(move)
-                moveMade = True
-                sqSelected = ()  # reset user clicks
-                playerClicks = []
-            else:
+            for i in range(len(validMoves)):
+                if move in validMoves[i]:  # check if the move is valid
+                    gs.makeMove(validMoves[i])
+                    moveMade = True
+                    sqSelected = ()  # reset user clicks
+                    playerClicks = []
+            if not moveMade:         # if moveMade == False:
                 playerClicks = [sqSelected]
 
         # key handler
