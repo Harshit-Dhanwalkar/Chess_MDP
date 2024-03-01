@@ -1,5 +1,4 @@
 # Updated by: Harshit
-# https://youtu.be/UR6NmL_xg3M?list=PLBwF487qi8MGU81nDGaeNE1EnNEPYWKY_&t=2487
 
 '''
 This will responsible for storing inforamtion about the current state of chess game.
