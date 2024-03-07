@@ -1,6 +1,9 @@
 import chess
-import chess.engine
+import math
 import base64
+
+def eval_func(x):
+    return math.sin(x) # We are taking J(x) = sin(x)
 
 def encode_board(board):
     # Encode the board using base64
@@ -12,49 +15,42 @@ def decode_board(encoded_board):
     decoded_board_fen = base64.b64decode(encoded_board.encode('utf-8')).decode('utf-8')
     board = chess.Board(decoded_board_fen)
     return board
-
-def print_numbered_board(board):
-    # Print the numbered chessboard
-    print("   a b c d e f g h")
-    print("  +----------------")
-    for i in range(8, 0, -1):
-        row = f"{i} |"
-        for j in range(1, 9):
-            square = chess.square(j - 1, i - 1)
-            piece = board.piece_at(square)
-            if piece is None:
-                row += " ."
-            else:
-                row += " " + piece.symbol().replace(".", " ")
-        print(row)
+def base64_to_int(encoded_board):
+    bytes_repr = base64.b64decode(encoded_board)
+    int_repr = int.from_bytes(bytes_repr, 'big')
+    return int_repr
 
 def simple_terminal_engine():
     # Create a chess board
     board = chess.Board()
 
-    while not board.is_checkmate():
-        # Print the numbered board
-        print_numbered_board(board)
-
-        # Encode and print the board
-        encoded_board = encode_board(board)
-        print("Encoded Board:", encoded_board)
-        
-        # Get the user's move
-        move = input("Enter your move (e.g., 'e2e4'): ")
-        
-        # Validate and make the move
-        if chess.Move.from_uci(move) in board.legal_moves:
-            board.push_uci(move)
-        else:
-            print("Illegal move. Try again.")
-
-        # Decode and print the board after the move
-        decoded_board = decode_board(encoded_board)
-        print("Decoded Board:")
-        print_numbered_board(decoded_board)
-
-    # Print the final board
-    print_numbered_board(board)
-
+    while not (board.is_checkmate() and board.is_stalemate() and board.is_insufficient_material()):
+        print(board)
+        #curr_eval = eval_func(base64_to_int(encode_board(board)))
+        final_eval_arr = []
+        A = [i for i in board.legal_moves]
+        for WhiteMove in A:
+            board.push_san(str(WhiteMove))
+            temp = []
+            for BlackMove in board.legal_moves:
+                board.push_san(str(BlackMove))
+                intermediate_eval = eval_func(base64_to_int(encode_board(board)))
+                temp.append(intermediate_eval)
+                board.pop()
+            final_eval_arr.append(min(temp))
+            board.pop()
+        final_eval = max(final_eval_arr)
+        action = final_eval_arr.index(final_eval)
+        board.push_san(str(action))
+        print(board)
 simple_terminal_engine()
+
+
+        
+        
+
+
+
+                
+            
+
