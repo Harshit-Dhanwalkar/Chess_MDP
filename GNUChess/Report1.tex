@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\hoffset = -70pt
+\voffset = -90pt
+\textwidth=500pt
+\textheight=700pt
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Reinforcement learning in chess (Part I)}
+\author{Ganesh Arvindh Ramanan (SC21B150) \\ Harshit Prashant Dhanwalkar (SC21B164)}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The goal of this project is to create a chess engine using the reinforcement learning algorithm TD($\lambda$). This project is divided into two parts, the first being the implementation of the TD($\lambda$) algorithm to get the \emph{evaluation function}. In the second part, this evaluation function is used to generate the reward for all possible legal moves that the engine can make. Once the reward is generated, the engine simply plays the move which maximizes the reward. \\
+
+\noindent In this report, we will focus on the code to enable the engine to play with an opponent provided that the \emph{evaluation function} was already learned using the TD($\lambda$) algorithm.
+
+\section{The problem statement}
+Let us denote with $S$ the set of all possible states (chess positions) and with $x_{t} \in S$ the state at time $t$. The index $t$ also means that $x_{t}$ was obtained after $t$ played \emph{actions} or moves. Let us assume that the game lasted for $N$ moves. For each state $x_{t}$ we have a set $A_{x_{t}}$, which is the set of all possible legal moves given the chess position $x_{t}$. The agent chooses to play a move $a \in A_{x_{t}}$ which leads to the next state $x_{t+1}$. Note that $x_{t+1}$ comes after both the players have played their moves. Thus, only those positions will be consided in which the agent has the ability to take an action. \\ 
+
+\noindent The agent will receive after each finished game a reward for the final move $r(x_{N})$, which in chess takes the value 0 for draw, -1 for loss and +1 for victory. We will now define a function $J(x)$ which is defined as 
+\[
+    J(x) = E_{x_{N}|x}r(x_{N})
+\]
+That is, given a state $x$, $J(x)$ gives us the expected value of reward. We can think of this as a function which returns the evaluation of a chess position and gives us the probability of success. TD($\lambda$) algortihm is applied to get an approximation to $J(x)$. 
+
+\section{Code}
+Let us assume that the TD($\lambda$) algorithm was employed and a suitable value of the evaluation function is obtained. Let's say that this evaluation function is given by 
+\[
+    J(x) = \sin(x)
+\]
+The goal now is to the exploit this function to generate intermediate rewards. To achieve this we first create a function which returns a list containing all possible legal moves given a state. We then iterate through this list and play every move. The corresponding states that are obtained due to each move is stored and not shown. The computer then iterates through all possible moves of the opponent and the states obtained are judged using the evaluation function. The computer assumes that the opponent will play the move which reduces the computer's chance of victory as much as possible. Thus it takes a minimum of the set of evaluations of all possible final states and assigns it as a \emph{reward} for choosing to play that move. It finally plays the move that maximizes reward. Note that the computer only thinks one step deep as it assumes that the evaluation function given to it is ideal.
+\lstinputlisting[language=Python]{Chess.py}
+\paragraph{Note : } 
+This code is taken from the file 'Chess.py'. \\ 
+
+\noindent Let us go through this code line by line. In line number 1, we have imported a module called \emph{chess}. This module provides a number of useful features such as storing he chess position as a string using FEN (Forsyth–Edwards Notation), detecting checks, checkmates and stalemates etc\dots We now want a way to convert this string (the FEN string) into a number. This is done by converting the string into base64 format which is then converted to base10 (which is our required number). The function for doing this is given in lines 12 and 23. \\ 
+
+\noindent Thus we have now found a way to represent every state with a unique number which can be fed to the evaluation function to obtain the evaluation. In line 28, we have defined a function which converts the board in FEN to a picture. Line 37 contains the function which has our required algorithm. We start by creating an object named 'board' of the class 'Board'. The while loop iterates the block of code underneath if the game didn't end.  \\ 
+
+\noindent We now create an empty array which stores the evaluations of the states obtained after the computer has played for the opponent. The block of code under the for loop populates this array. We then take the index of the maximum element in this array and play the move in the action space corresponding to this index. 
+
+
+\end{document}
