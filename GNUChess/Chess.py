@@ -39,17 +39,16 @@ def simple_terminal_engine():
     board = chess.Board()
 
     while not (board.is_checkmate() and board.is_stalemate() and board.is_insufficient_material()):
-        #curr_eval = eval_func(base64_to_int(encode_board(board)))
         final_eval_arr = []
-        A = [i for i in board.legal_moves]
+        A = [i for i in board.legal_moves] #Creating action space
         for WhiteMove in A:
-            board.push_san(str(WhiteMove))
+            board.push_san(str(WhiteMove)) # This function plays the move and modifies board
             temp = []
             for BlackMove in board.legal_moves:
                 board.push_san(str(BlackMove))
                 intermediate_eval = eval_func(base64_to_int(encode_board(board)))
                 temp.append(intermediate_eval)
-                board.pop()
+                board.pop() #Undo the last move
             final_eval_arr.append(min(temp))
             board.pop()
         final_eval = max(final_eval_arr)
