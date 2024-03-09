@@ -3,11 +3,12 @@ import chess.svg
 import math
 import base64
 from PIL import Image 
+import cv2
 from cairosvg import svg2png
 
 
 def eval_func(x):
-    return math.sin(x) # We are taking J(x) = sin(x)
+    return math.exp(-(x**2)) # We are taking J(x) = sin(x)
 
 def encode_board(board):
     # Encode the board using base64
@@ -25,14 +26,18 @@ def base64_to_int(encoded_board):
     int_repr = int.from_bytes(bytes_repr, 'big')
     return int_repr
 
-def showBoard(board):
+
+def dispBoard(board):
     f = open("pic.svg","w")
-    a = chess.svg.board(board)
+    a = chess.svg.board(board, flipped=True)
     f.write(a)
     f.close()
     svg2png(url="./pic.svg", write_to="./pic.png")
-    im = Image.open("pic.png")
-    im.show()
+    image = cv2.imread('./pic.png')
+    cv2.imshow('image window', image)
+    cv2.waitKey(1)
+    #cv2.destroyAllWindows()
+
 
 def simple_terminal_engine():
     # Create a chess board
@@ -55,16 +60,15 @@ def simple_terminal_engine():
         action = final_eval_arr.index(final_eval)
         board.push_san(str(A[action]))
         print(board)
-        showBoard(board)
+        dispBoard(board)
         PlayerMove = str(input("Enter move : "))
         board.push_san(PlayerMove)
         print(board)
-        showBoard(board)
+        dispBoard(board)
 simple_terminal_engine()
 
 
-        
-        
+
 
 
 
