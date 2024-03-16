@@ -8,7 +8,7 @@ from cairosvg import svg2png
 
 
 def eval_func(x):
-    return math.exp(-(x**2)) # We are taking J(x) = sin(x)
+    return math.exp(-(x**2)) # We are taking J(x) = exponential function
 
 def encode_board(board):
     # Encode the board using base64
@@ -35,9 +35,9 @@ def dispBoard(board):
     svg2png(url="./pic.svg", write_to="./pic.png")
     image = cv2.imread('./pic.png')
     cv2.imshow('image window', image)
-    cv2.waitKey(1)
-    #cv2.destroyAllWindows()
-
+    # cv2.waitKey(1)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        cv2.destroyAllWindows()
 
 def simple_terminal_engine():
     # Create a chess board
@@ -61,8 +61,14 @@ def simple_terminal_engine():
         board.push_san(str(A[action]))
         print(board)
         dispBoard(board)
-        PlayerMove = str(input("Enter move : "))
-        board.push_san(PlayerMove)
+        while True:
+            try:
+                PlayerMove = str(input("Enter move : "))
+                board.push_san(PlayerMove)
+                break
+            except ValueError:
+                print("Invalid move. Please try again.")
+                board.pop()
         print(board)
         dispBoard(board)
 simple_terminal_engine()
