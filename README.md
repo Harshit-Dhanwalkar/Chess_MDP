@@ -13,7 +13,7 @@ The goal of this project is to develop an intelligent Chess-playing agent that c
 ## Collaborators
 
 - [Collaborator 1: Harshit Prahant Dhanwalkar](https://github.com/Harshit-Dhanwalkar)
-- [Collaborator 2: Gnanesh Arvind](https://github.com/Phoenix-rd)
+- [Collaborator 2: Ganesh Arvindh](https://github.com/Phoenix-rd)
 
 ## Getting Started
 
