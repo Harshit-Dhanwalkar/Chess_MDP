@@ -6,6 +6,7 @@ import cv2
 from cairosvg import svg2png
 from scipy.optimize import fsolve
 
+
 def encode_board(board):
     # Encode the board using base64
     encoded_board = base64.b64encode(board.board_fen().encode("utf-8")).decode("utf-8")
@@ -69,6 +70,7 @@ def simple_terminal_engine():
         if board.is_insufficient_material():
             state_list.append("D")
             break
+        print(board.legal_moves)
         while True:
             try:
                 PlayerMove = str(input("Enter move : "))
@@ -88,6 +90,7 @@ def simple_terminal_engine():
             break
 
     return state_list
+
 
 A = float(input("A = "))
 B = float(input("B = "))
@@ -118,7 +121,7 @@ def compute_max():
             guess.append(func(temp))
         except:
             break
-    print(max(guess))
+    return max(guess)
 
 
 def sum_from(arr, t):  # This is out $\Delta t$
@@ -164,7 +167,13 @@ def engine_learn():
         delta_t = sum_from(d, t)  # This is our $\Delta t$
         for i in range(len(temp)):
             update[i] += temp[i] * delta_t
-    print(update)
+    return update
 
+while True:
+    l = engine_learn()  
+    A = l[0]
+    B = l[1]
+    C = l[2]
+    D = l[3]
+    print(l)
 
-engine_learn()  # This is the main function that will be called
