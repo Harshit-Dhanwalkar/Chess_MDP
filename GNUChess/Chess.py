@@ -58,7 +58,7 @@ def simple_terminal_engine():
             for BlackMove in board.legal_moves:
                 board.push_san(str(BlackMove))
                 intermediate_eval = eval_func(base64_to_int(encode_board(board)))
-                temp.append(intermediate_eval)
+                temp.append(interengine_learnediate_eval)
                 board.pop()  # Undo the last move
             final_eval_arr.append(min(temp))
             board.pop()
@@ -92,6 +92,7 @@ def simple_terminal_engine():
             break
 
     return state_list
+
 
 
 l = simple_terminal_engine()
