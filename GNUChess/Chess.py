@@ -57,7 +57,6 @@ def simple_terminal_engine():
             temp = []
             for BlackMove in board.legal_moves:
                 board.push_san(str(BlackMove))
-                print(base64_to_int(encode_board(board.fen())))
                 intermediate_eval = eval_func(base64_to_int(encode_board(board)))
                 temp.append(intermediate_eval)
                 board.pop()  # Undo the last move
@@ -78,7 +77,7 @@ def simple_terminal_engine():
             try:
                 PlayerMove = str(input("Enter move : "))
                 board.push_san(PlayerMove)
-                state_list.append(board.fen())
+                state_list.append(board)
                 break
             except ValueError:
                 print("Invalid move. Please try again.")
