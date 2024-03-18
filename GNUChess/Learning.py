@@ -1,4 +1,5 @@
 import chess
+import chess.engine
 import chess.svg
 import math
 import base64
@@ -43,7 +44,7 @@ def simple_terminal_engine():
     # Create a chess board
     board = chess.Board()
     state_list = [board]
-
+    engine = chess.engine.SimpleEngine.popen_uci(r"stockfish")
     while True:
         final_eval_arr = []
         A = [i for i in board.legal_moves]  # Creating action space
@@ -71,14 +72,16 @@ def simple_terminal_engine():
         if board.is_insufficient_material():
             state_list.append("D")
             break
-        while True:
-            try:
-                PlayerMove = str(input("Enter move : "))
-                board.push_san(PlayerMove)
-                state_list.append(board)
-                break
-            except ValueError:
-                print("Invalid move. Please try again.")
+        #while True:
+        #    try:
+        #        PlayerMove = str(input("Enter move : "))
+        #        board.push_san(PlayerMove)
+        #        state_list.append(board)
+        #        break
+        #    except ValueError:
+        #        print("Invalid move. Please try again.")
+        stock_move = engine.play(board, chess.engine.Limit(time=0.1))
+        board.push(stock_move.move)
         print(board)
         dispBoard(board)
         if board.is_checkmate():
@@ -174,5 +177,9 @@ while True:
     B = l[1]
     C = l[2]
     D = l[3]
+    f = open("Parameters.txt", "a")
+    text = str(l) + '\n'
+    f.write(text)
+    f.close()
     print(l)
 
