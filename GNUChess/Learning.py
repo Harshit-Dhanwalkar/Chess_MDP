@@ -28,8 +28,8 @@ def base64_to_int(encoded_board):
 
 
 def dispBoard(board):
-    f = open("pic.svg", "w")
-    a = chess.svg.board(board, flipped=True)
+    f = open("pic.svg", "w") 
+    a = chess.svg.board(board, flipped=False)
     f.write(a)
     f.close()
     svg2png(url="./pic.svg", write_to="./pic.png")
@@ -90,7 +90,7 @@ def simple_terminal_engine():
         if board.is_insufficient_material():
             state_list.append("D")
             break
-
+    engine.quit()
     return state_list
 
 
