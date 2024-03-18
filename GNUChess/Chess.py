@@ -81,7 +81,6 @@ def simple_terminal_engine():
                 break
             except ValueError:
                 print("Invalid move. Please try again.")
-                board.pop()
         print(board)
         dispBoard(board)
         if board.is_checkmate():

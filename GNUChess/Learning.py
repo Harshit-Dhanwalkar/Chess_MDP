@@ -62,6 +62,7 @@ def simple_terminal_engine():
         final_eval = max(final_eval_arr)
         action = final_eval_arr.index(final_eval)
         board.push_san(str(A[action]))
+        print("Engine move : ", A[action])
         print(board)
         dispBoard(board)
         if board.is_checkmate():
@@ -70,7 +71,6 @@ def simple_terminal_engine():
         if board.is_insufficient_material():
             state_list.append("D")
             break
-        print(board.legal_moves)
         while True:
             try:
                 PlayerMove = str(input("Enter move : "))
@@ -79,7 +79,6 @@ def simple_terminal_engine():
                 break
             except ValueError:
                 print("Invalid move. Please try again.")
-                board.pop()
         print(board)
         dispBoard(board)
         if board.is_checkmate():
@@ -100,7 +99,7 @@ D = float(input("D = "))
 
 def func(x):
     return (
-        A * math.sin(x) + B * math.cos(x) + C * math.atan(x) + D * (math.e ** (-(x**2)))
+        A * math.sin(x) + B * math.cos(x) + C * math.atan(x) + D * math.tanh(x) 
     )
 
 
@@ -109,7 +108,7 @@ def func_deriv(x):  # derivative of func(x)
         A * math.cos(x)
         - B * math.sin(x)
         + C * (1 / (1 + (x**2)))
-        + D * ((math.e ** (-(x**2))) * (-2 * x))
+        + D * (1/math.cosh(x))**2
     )
 
 
@@ -133,8 +132,8 @@ def sum_from(arr, t):  # This is out $\Delta t$
     return sum
 
 
-def grad(x):
-    return [math.sin(x), math.cos(x), math.atan(x), (math.e ** (-(x**2)))]
+def grad(x, max):
+    return [math.sin(x)/max, math.cos(x)/max, math.atan(x)/max, math.tanh(x)/max]
 
 
 def engine_learn():
@@ -163,7 +162,7 @@ def engine_learn():
     update = [A, B, C, D]  # This will contain the corrected coefficients
     for t in range(N):
         x = base64_to_int(encode_board(state_list[t]))
-        temp = grad(x)  # The gradient at a particular state
+        temp = grad(x, max_func)  # The gradient at a particular state
         delta_t = sum_from(d, t)  # This is our $\Delta t$
         for i in range(len(temp)):
             update[i] += temp[i] * delta_t
