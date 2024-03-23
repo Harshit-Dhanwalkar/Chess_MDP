@@ -3,6 +3,7 @@ import chess.engine
 import chess.svg
 import cv2
 from cairosvg import svg2png
+import threading
 
 A = float(input("A = "))
 B = float(input("B = "))
@@ -130,6 +131,34 @@ def generateMove(board, count=1):  # returns [move, evaluation]
     action_ind = final_eval_arr.index(final_eval)
     return [A[action_ind], final_eval]
 
+def generateReward(board, move, store, count = 1): # returns [eval, move]
+    brd = board.copy()
+    if(count == depth):
+        brd.push_san(str(move))
+        temp = []
+        print("Black loop 1")
+        for BlackMove in brd.legal_moves:
+            brd.push_san(str(BlackMove))
+            temp.append(ev_func(brd))
+            brd.pop()
+        brd.pop()
+        store.append([min(temp), move])
+
+    brd.push_san(str(move))
+    black_eval = []
+    for BlackMove in brd.legal_moves:
+        brd.push_san(str(BlackMove))
+        temp = []
+        print("-------------------------------------")
+        for WhiteMove in brd.legal_moves:
+            print("WHITE LOOP 2")
+            temp.append(generateReward(brd, WhiteMove, count + 1))
+        black_eval.append(max(temp))
+        brd.pop()
+    brd.pop()
+    store.append([min(black_eval), move])
+
+
 
 def simple_terminal_engine():
     # Create a chess board
@@ -137,9 +166,30 @@ def simple_terminal_engine():
     state_list = [board]
     engine = chess.engine.SimpleEngine.popen_uci(r"stockfish")
     while True:
-        action = generateMove(board)
-        board.push_san(str(action[0]))
-        print("Engine move : ", action[0])
+        #action = generateMove(board)
+        #board.push_san(str(action[0]))
+        #print("Engine move : ", action[0])
+        
+        temp = []
+        threads = []
+        for move in board.legal_moves:
+            t = threading.Thread(target=generateReward, args=[board,move,temp]) #Initializing threads
+            threads.append(t)
+        
+        for thread in threads:
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        bestMove = 0
+        max = -1000000
+        for i in temp:
+            if(max < i[0]):
+                bestMove = i[1]
+                max = i[0]
+        print("Engine move : ", bestMove)
+        board.push_san(str(bestMove))
         print(board)
         dispBoard(board)
         if board.is_checkmate():
