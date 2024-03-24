@@ -71,7 +71,7 @@ def generateMove(board, count=1):
         action_ind = final_eval_arr.index(final_eval)
         return [list(board.legal_moves)[action_ind], final_eval]
 
-    final_eval_arr = []
+    final_eval_arr = []h
     for whiteMove in board.legal_moves:
         board.push_san(str(whiteMove))
         final_eval = -np.inf
