@@ -5,11 +5,13 @@ import cv2
 import numpy as np
 from cairosvg import svg2png
 
-A = float(input("A = "))
-B = float(input("B = "))
+A = float(input("A (coeff. of material) = "))
+B = float(input("B (coeff. of central control) = "))
+C = float(input("C (coeff. of piece safety) = "))
+D = float(input("D (coeff. of pawn structure) = "))
 n = int(input("Number of games = "))
-depth = int(input("depth = "))
-man = bool(input("MANUAL = "))
+depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
+man = bool(input("MANUAL (leave it blanck if you want automation) = "))
 
 # Precompute square values for piece placement evaluation
 square_values = {
@@ -34,6 +36,7 @@ def material(board):
     return ret
 
 def cent_cont(board):
+    # Evaluate the control of the center
     ret = 0
     for square, val in square_values.items():
         white_attackers = len(board.attackers(chess.WHITE, square))
@@ -41,8 +44,49 @@ def cent_cont(board):
         ret += (white_attackers - black_attackers) * val
     return ret
 
+def piece_safety(board):
+    # Evaluate the safety of pieces
+    safety_score = 0
+    for square in chess.SQUARES:
+        piece = board.piece_at(square)
+        if piece is not None:
+            attackers = board.attackers(piece.color, square)
+            defenders = board.attackers(not piece.color, square)
+            safety_score += len(attackers) - len(defenders)
+    return safety_score
+
+def pawn_structure(board):
+    # Evaluate the pawn structure
+    white_pawns = board.pieces(chess.PAWN, chess.WHITE)
+    black_pawns = board.pieces(chess.PAWN, chess.BLACK)
+    white_pawn_structure = 0
+    black_pawn_structure = 0
+
+    for square in white_pawns:
+        file = chess.square_file(square)
+        rank = chess.square_rank(square)
+        if file == 0 or file == 7:
+            white_pawn_structure -= 1
+        if rank == 1:
+            white_pawn_structure -= 1
+        if rank == 6:
+            white_pawn_structure += 1
+
+    for square in black_pawns:
+        file = chess.square_file(square)
+        rank = chess.square_rank(square)
+        if file == 0 or file == 7:
+            black_pawn_structure -= 1
+        if rank == 1:
+            black_pawn_structure += 1
+        if rank == 6:
+            black_pawn_structure -= 1
+
+    return white_pawn_structure + black_pawn_structure
+
+
 def ev_func(board):
-    return A * material(board) + B * cent_cont(board)
+    return A * material(board) + B * cent_cont(board) + C * piece_safety(board) + D * pawn_structure(board)
 
 def dispBoard(board):
     f = open("pic.svg", "w")
@@ -71,7 +115,7 @@ def generateMove(board, count=1):
         action_ind = final_eval_arr.index(final_eval)
         return [list(board.legal_moves)[action_ind], final_eval]
 
-    final_eval_arr = []h
+    final_eval_arr = []
     for whiteMove in board.legal_moves:
         board.push_san(str(whiteMove))
         final_eval = -np.inf
@@ -83,6 +127,7 @@ def generateMove(board, count=1):
         final_eval_arr.append(final_eval)
         board.pop()
     best_move_index = np.argmax(final_eval_arr)
+    print("Computer is thinking...")
     return [list(board.legal_moves)[best_move_index], final_eval_arr[best_move_index]]
 
 def simple_terminal_engine():
