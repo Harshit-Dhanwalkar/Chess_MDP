@@ -12,7 +12,7 @@ D = float(input("D (coeff. of pawn structure) = "))
 E = float(input("E (coeff. of king safety) = "))
 n = int(input("Number of games = "))
 depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
-man = bool(input("MANUAL (leave it blanck if you want automation) = "))
+man = bool(input("MANUAL (leave it blank if you want automation) = "))
 
 # Precompute square values for piece placement evaluation
 square_values = {
@@ -133,7 +133,8 @@ def generateMove(board, count=1):
         final_eval_arr.append(final_eval)
         board.pop()
     best_move_index = np.argmax(final_eval_arr)
-    print("Computer is thinking...")
+    print("\n-----------------------------------")
+    print("Computer is thinking...\n")
     return [list(board.legal_moves)[best_move_index], final_eval_arr[best_move_index]]
 
 def simple_terminal_engine():
