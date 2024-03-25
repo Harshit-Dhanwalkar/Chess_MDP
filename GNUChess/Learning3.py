@@ -9,6 +9,7 @@ A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
 C = float(input("C (coeff. of piece safety) = "))
 D = float(input("D (coeff. of pawn structure) = "))
+E = float(input("E (coeff. of king safety) = "))
 n = int(input("Number of games = "))
 depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
 man = bool(input("MANUAL (leave it blanck if you want automation) = "))
@@ -84,9 +85,14 @@ def pawn_structure(board):
 
     return white_pawn_structure + black_pawn_structure
 
+def king_safety(board):
+        # Evaluate the safety of the king
+        king_square = board.king(chess.WHITE) if board.turn == chess.WHITE else board.king(chess.BLACK)
+        attackers = board.attackers(not board.turn, king_square)
+        return -len(attackers)
 
 def ev_func(board):
-    return A * material(board) + B * cent_cont(board) + C * piece_safety(board) + D * pawn_structure(board)
+    return A * material(board) + B * cent_cont(board) + C * piece_safety(board) + D * pawn_structure(board) + E * king_safety(board)
 
 def dispBoard(board):
     f = open("pic.svg", "w")
