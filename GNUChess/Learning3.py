@@ -2,8 +2,9 @@ import chess
 import chess.engine
 import chess.svg
 import cv2
-import numpy as np
 from cairosvg import svg2png
+import os 
+from multiprocessing import Pool
 
 A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
@@ -100,51 +101,64 @@ def dispBoard(board):
     cv2.imshow("image window", image)
     cv2.waitKey(1)  # Wait for a short duration to display image
 
-def generateMove(board, count=1):
-    if count == depth:
-        final_eval_arr = []
-        for whiteMove in board.legal_moves:
-            board.push_san(str(whiteMove))
-            black_eval = []
-            for blackMove in board.legal_moves:
-                board.push_san(str(blackMove))
-                intermediate_eval = ev_func(board)
-                black_eval.append(intermediate_eval)
-                board.pop()
-            final_eval_arr.append(min(black_eval))
-            board.pop()
-        final_eval = max(final_eval_arr)
-        action_ind = final_eval_arr.index(final_eval)
-        return [list(board.legal_moves)[action_ind], final_eval]
+def generateReward(board, move, count = 1): # returns eval
+    brd = board.copy()
+    if(count == depth):
+        brd.push_san(str(move))
+        temp = []
+        print("Black loop 1")
+        for BlackMove in brd.legal_moves:
+            brd.push_san(str(BlackMove))
+            temp.append(ev_func(brd))
+            brd.pop()
+        brd.pop()
+        print(temp)
+        return min(temp)
 
-    final_eval_arr = []
-    for whiteMove in board.legal_moves:
-        board.push_san(str(whiteMove))
-        final_eval = -np.inf
-        for blackMove in board.legal_moves:
-            board.push_san(str(blackMove))
-            temp = generateMove(board, count + 1)
-            final_eval = max(final_eval, temp[1])
-            board.pop()
-        final_eval_arr.append(final_eval)
-        board.pop()
-    best_move_index = np.argmax(final_eval_arr)
-    print("\n-----------------------------------")
-    print("Computer is thinking...\n")
-    return [list(board.legal_moves)[best_move_index], final_eval_arr[best_move_index]]
+    else:
+        brd.push_san(str(move))
+        black_eval = []
+        for BlackMove in brd.legal_moves:
+            brd.push_san(str(BlackMove))
+            white_eval = []
+            #print("-------------------------------------")
+            for WhiteMove in brd.legal_moves:
+                print("WHITE LOOP 2")
+                white_eval.append(generateReward(brd, WhiteMove, count + 1))
+            black_eval.append(max(white_eval))
+            brd.pop()
+        brd.pop()
+        print(black_eval)
+        return min(black_eval)
+
+
 
 def simple_terminal_engine():
+    # Create a chess board
     board = chess.Board()
     state_list = [board]
     engine = chess.engine.SimpleEngine.popen_uci(r"stockfish")
     while True:
-        action = generateMove(board)
-        board.push_san(str(action[0]))
-        print("Engine move : ", action[0])
+        #action = generateMove(board)
+        #board.push_san(str(action[0]))
+        #print("Engine move : ", action[0])
+        
+        A = [[board ,i] for i in board.legal_moves]
+        rewards = []
+        with Pool(os.cpu_count()) as p:
+            rewards = p.starmap(generateReward, A)
+        
+        max_eval = max(rewards) 
+        bestMove = A[rewards.index(max_eval)][1]
+        print("Engine move : ", bestMove)
+        board.push_san(str(bestMove))
         print(board)
         dispBoard(board)
-        if board.is_game_over():
-            state_list.append(board.result())
+        if board.is_checkmate():
+            state_list.append("W")
+            break
+        if board.is_insufficient_material():
+            state_list.append("D")
             break
         if man:
             while True:
@@ -161,17 +175,21 @@ def simple_terminal_engine():
             state_list.append(board)
         print(board)
         dispBoard(board)
-        if board.is_game_over():
-            state_list.append(board.result())
+        if board.is_checkmate():
+            state_list.append("L")
+            break
+        if board.is_insufficient_material():
+            state_list.append("D")
             break
     engine.quit()
     return state_list
+
 
 def sum_from(arr, t):
     return sum(arr[t:])
 
 def grad(state):    # Gradient of the evaluation function
-    return [material(state), cent_cont(state)]
+    return [material(state), cent_cont(state), pawn_structure(state), black_king_safety(state) ,white_king_safety(state)]
 
 def engine_learn(a):
     state_list = simple_terminal_engine()
@@ -191,7 +209,7 @@ def engine_learn(a):
         d.append(J_tp - J_t)
     J = ev_func(state_list[N - 1])
     d.append(rN - J)
-    update = [A, B]  # This will contain the corrected coefficients
+    update = [A, B, C, D, E]  # This will contain the corrected coefficients
     for t in range(N):
         temp = grad(state_list[t])  # The gradient at a particular state
         delta_t = sum_from(d, t)  # This is our $\Delta t$
@@ -204,6 +222,9 @@ while n > 0:
     l = engine_learn(n)
     A = l[0]
     B = l[1]
+    C = l[2]
+    D = l[3]
+    E = l[4]
     with open("Parameters3.txt", "a") as f:
         text = str(l) + "\n"
         f.write(text)
