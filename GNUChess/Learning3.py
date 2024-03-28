@@ -7,9 +7,10 @@ from cairosvg import svg2png
 
 A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
-C = float(input("C (coeff. of piece safety) = "))
-D = float(input("D (coeff. of pawn structure) = "))
-E = float(input("E (coeff. of king safety) = "))
+C = float(input("D (coeff. of pawn structure) = "))
+D = float(input("E (coeff. of black king safety) = "))
+E = float(input("E (coeff. of white king safety) = "))
+
 n = int(input("Number of games = "))
 depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
 man = bool(input("MANUAL (leave it blank if you want automation) = "))
@@ -45,17 +46,6 @@ def cent_cont(board):
         ret += (white_attackers - black_attackers) * val
     return ret
 
-def piece_safety(board):
-    # Evaluate the safety of pieces
-    safety_score = 0
-    for square in chess.SQUARES:
-        piece = board.piece_at(square)
-        if piece is not None:
-            attackers = board.attackers(piece.color, square)
-            defenders = board.attackers(not piece.color, square)
-            safety_score += len(attackers) - len(defenders)
-    return safety_score
-
 def pawn_structure(board):
     # Evaluate the pawn structure
     white_pawns = board.pieces(chess.PAWN, chess.WHITE)
@@ -85,14 +75,20 @@ def pawn_structure(board):
 
     return white_pawn_structure + black_pawn_structure
 
-def king_safety(board):
-        # Evaluate the safety of the king
-        king_square = board.king(chess.WHITE) if board.turn == chess.WHITE else board.king(chess.BLACK)
-        attackers = board.attackers(not board.turn, king_square)
-        return -len(attackers)
+def black_king_safety(board):
+    # Evaluate the safety of the black king
+    king_square = board.king(chess.BLACK)  # finds the position of Black king on board
+    attackers = board.attackers(chess.WHITE, king_square)
+    return -len(attackers)   # -ve sign means more the attackers less the safety
+
+def white_king_safety(board):
+    # Evaluate the safety of the white king
+    king_square = board.king(chess.WHITE)
+    attackers = board.attackers(chess.BLACK, king_square)
+    return -len(attackers)
 
 def ev_func(board):
-    return A * material(board) + B * cent_cont(board) + C * piece_safety(board) + D * pawn_structure(board) + E * king_safety(board)
+    return A * material(board) + B * cent_cont(board) + C * pawn_structure(board) + D * black_king_safety(board) + E * white_king_safety(board)
 
 def dispBoard(board):
     f = open("pic.svg", "w")
