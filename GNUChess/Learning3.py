@@ -8,8 +8,8 @@ from multiprocessing import Pool
 
 A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
-C = float(input("D (coeff. of pawn structure) = "))
-D = float(input("E (coeff. of black king safety) = "))
+C = float(input("C (coeff. of pawn structure) = "))
+D = float(input("D (coeff. of black king safety) = "))
 E = float(input("E (coeff. of white king safety) = "))
 
 n = int(input("Number of games = "))
@@ -76,6 +76,8 @@ def pawn_structure(board):
 
     return white_pawn_structure + black_pawn_structure
 
+
+
 def black_king_safety(board):
     # Evaluate the safety of the black king
     king_square = board.king(chess.BLACK)  # finds the position of Black king on board
@@ -87,6 +89,36 @@ def white_king_safety(board):
     king_square = board.king(chess.WHITE)
     attackers = board.attackers(chess.BLACK, king_square)
     return -len(attackers)
+
+'''
+def black_king_safety(board):
+    # Evaluate the safety of the black king and surrounding squares
+    king_square = board.king(chess.BLACK)
+    surrounding_squares = []
+
+    # Iterate over surrounding squares and add valid ones to the list
+    for file_offset in [-1, 0, 1]:
+        for rank_offset in [-1, 0, 1]:
+            square = chess.square(chess.square_file(king_square) + file_offset, chess.square_rank(king_square) + rank_offset)
+            if chess.square_file(square) in range(8) and chess.square_rank(square) in range(8):
+                surrounding_squares.append(square)
+
+    return -len(board.attackers(chess.WHITE, king_square)) - len(board.attackers(chess.WHITE, surrounding_squares))
+
+def white_king_safety(board):
+    # Evaluate the safety of the white king and surrounding squares
+    king_square = board.king(chess.WHITE)
+    surrounding_squares = []
+
+    # Iterate over surrounding squares and add valid ones to the list
+    for file_offset in [-1, 0, 1]:
+        for rank_offset in [-1, 0, 1]:
+            square = chess.square(chess.square_file(king_square) + file_offset, chess.square_rank(king_square) + rank_offset)
+            if chess.square_file(square) in range(8) and chess.square_rank(square) in range(8):
+                surrounding_squares.append(square)
+
+    return -len(board.attackers(chess.BLACK, king_square)) - len(board.attackers(chess.BLACK, surrounding_squares))
+'''
 
 def ev_func(board):
     return A * material(board) + B * cent_cont(board) + C * pawn_structure(board) + D * black_king_safety(board) + E * white_king_safety(board)
@@ -101,19 +133,22 @@ def dispBoard(board):
     cv2.imshow("image window", image)
     cv2.waitKey(1)  # Wait for a short duration to display image
 
-def generateReward(board, move, count = 1): # returns eval
+def generateReward(board, move, count=1):  # returns eval
     brd = board.copy()
-    if(count == depth):
+    if count == depth:
         brd.push_san(str(move))
         temp = []
-        print("Black loop 1")
+        print("BLACK LOOP 1")
         for BlackMove in brd.legal_moves:
             brd.push_san(str(BlackMove))
             temp.append(ev_func(brd))
             brd.pop()
         brd.pop()
         print(temp)
-        return min(temp)
+        if temp:
+            return min(temp)
+        else:
+            return float('inf')  # Return a default value if temp is empty
 
     else:
         brd.push_san(str(move))
@@ -121,7 +156,7 @@ def generateReward(board, move, count = 1): # returns eval
         for BlackMove in brd.legal_moves:
             brd.push_san(str(BlackMove))
             white_eval = []
-            #print("-------------------------------------")
+            # print("-------------------------------------")
             for WhiteMove in brd.legal_moves:
                 print("WHITE LOOP 2")
                 white_eval.append(generateReward(brd, WhiteMove, count + 1))
@@ -129,8 +164,10 @@ def generateReward(board, move, count = 1): # returns eval
             brd.pop()
         brd.pop()
         print(black_eval)
-        return min(black_eval)
-
+        if black_eval:
+            return min(black_eval)
+        else:
+            return -float('inf')  # Return a default value if black_eval is empty
 
 
 def simple_terminal_engine():
@@ -143,11 +180,11 @@ def simple_terminal_engine():
         #board.push_san(str(action[0]))
         #print("Engine move : ", action[0])
         
-        A = [[board ,i] for i in board.legal_moves]
+        A = [(board, move) for move in board.legal_moves]
         rewards = []
         with Pool(os.cpu_count()) as p:
             rewards = p.starmap(generateReward, A)
-        
+
         max_eval = max(rewards) 
         bestMove = A[rewards.index(max_eval)][1]
         print("Engine move : ", bestMove)
@@ -230,4 +267,3 @@ while n > 0:
         f.write(text)
     print(l)
     n -= 1
-
