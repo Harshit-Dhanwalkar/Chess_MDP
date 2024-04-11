@@ -1,3 +1,4 @@
+#! /bin/python3
 import chess
 import chess.engine
 import chess.svg
@@ -8,11 +9,15 @@ import os
 
 A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
+C = float(input("C (coeff. of king safety) = "))
 
 
 n = int(input("Number of games = "))
 depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
 man = bool(input("MANUAL (leave it blank if you want automation) = "))
+
+white_is_castled = False
+black_is_castled = False
 
 def dispBoard(board):
     # Function to display the board
@@ -78,6 +83,29 @@ def cent_cont(board):
         ret += (whiteAttackers - blackAttackers) * value[square]
     return ret
 
+def kingSafety(board):
+    surrounding = [[7,8,9],[-1,0,1],[-9, -8, -7]]
+    white_king_index = board.king(chess.WHITE)
+    black_king_index = board.king(chess.BLACK)
+    ret = 0
+    for i in range(0,3):
+        for j in range(0,3):
+            try:
+                blackAttackers = len(board.attackers(chess.BLACK, white_king_index + surrounding[i][j])) # Number of attackers near white king
+                whiteAttackers = len(board.attackers(chess.WHITE,  black_king_index + surrounding[i][j]))#  Number of attackers near black king
+                ret += (whiteAttackers - blackAttackers)
+            except IndexError:
+                continue
+    return ret
+
+def isCastled():
+    ret = 0
+    if(white_is_castled):
+        ret += 3 
+    if(black_is_castled):
+        ret -= 3
+    return ret
+
 def mobiltity(board):
     temp = [i for i in board.legal_moves]
     return len(temp)
@@ -86,15 +114,15 @@ def gameOver(board):
     if(board.is_checkmate()):
         outcome = board.outcome()
         if(outcome.winner == chess.WHITE):
-            return 100*(A + B)
+            return 100*(A + B + C)
         else:
-            return -100*(A + B)
+            return -100*(A + B + C)
     else:
         return 0
 
 def ev_func(board):
     # The evaluation function J(x)
-    return A * material(board) + B * mobiltity(board) + gameOver(board)
+    return A * material(board) + B * cent_cont(board) + C * kingSafety(board) + isCastled() + gameOver(board)
 
 
 def sum_from(arr, t):  # This is our $\Delta t$
@@ -108,7 +136,7 @@ def sum_from(arr, t):  # This is our $\Delta t$
 
 def grad(board):
     # Gradient of J(x)
-    return [material(board), mobiltity(board)]
+    return [material(board), cent_cont(board), kingSafety(board)]
 
 def generateReward(board, move, count = 1): 
     # Assigns reward for each move based on depth
@@ -168,6 +196,8 @@ def simple_terminal_engine():
         board.push_san(str(bestMove))
         print(board)
         dispBoard(board)
+        if(str(bestMove) == '0-0' or str(bestMove) == '0-0-0'):
+            white_is_castled = True
         if board.is_checkmate():
             state_list.append("W")
             break
@@ -178,6 +208,8 @@ def simple_terminal_engine():
             while True:
                 try:
                     PlayerMove = str(input("Enter move : "))
+                    if(str(PlayerMove) == '0-0' or str(PlayerMove) == '0-0-0'):
+                        black_is_castled = True
                     board.push_san(PlayerMove)
                     state_list.append(board)
                     break
@@ -185,6 +217,8 @@ def simple_terminal_engine():
                     print("Invalid move. Please try again.")
         else:
             stock_move = engine.play(board, chess.engine.Limit(time=0.1))
+            if(str(stock_move.move) == '0-0' or str(stock_move.move) == '0-0-0'):
+                black_is_castled = True
             board.push(stock_move.move)
             state_list.append(board)
         print(board)
@@ -206,9 +240,9 @@ def engine_learn(a):
     N = len(state_list) - 1  # Actual length of the game neglecting the final element
     rN = 0
     if state_list[N] == "W":
-        rN = 100 * (A + B)
+        rN = 100 * (A + B + C)
     elif state_list[N] == "L":
-        rN = -100 * (A + B)
+        rN = -100 * (A + B + C)
     d = []  # Temporal differences are stored here
     for t in range(0, N - 1):
         J_t = ev_func(state_list[t])
@@ -216,7 +250,7 @@ def engine_learn(a):
         d.append(J_tp - J_t)
     J = ev_func(state_list[N - 1])
     d.append(rN - J)
-    update = [A, B]  # This will contain the corrected coefficients
+    update = [A, B, C]  # This will contain the corrected coefficients
     for t in range(N):
         temp = grad(state_list[t])  # The gradient at a particular state
         delta_t = sum_from(d, t)  # This is our $\Delta t$
@@ -233,6 +267,7 @@ while True:
     # update of coefficients
     A = l[0]
     B = l[1]
+    C = l[2]
     f = open("Parameters2.txt", "a") # Putting the updated coeff. in a file
     text = str(l) + "\n"
     f.write(text)
