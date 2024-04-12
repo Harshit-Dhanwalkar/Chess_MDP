@@ -1,11 +1,11 @@
 #! /bin/python3
-import chess
-import chess.engine
-import chess.svg
+import os
 import cv2
+import chess
+import chess.svg
+import chess.engine
 from cairosvg import svg2png
 from multiprocessing import Pool
-import os
 
 A = float(input("A (coeff. of material) = "))
 B = float(input("B (coeff. of central control) = "))
@@ -13,11 +13,12 @@ C = float(input("C (coeff. of king safety) = "))
 
 
 n = int(input("Number of games = "))
-depth = int(input("depth (no. of turns you want algorithm to think furthur) = "))
+depth = int(input("Depth (no. of turns you want algorithm to think furthur) = "))
 man = bool(input("MANUAL (leave it blank if you want automation) = "))
 
 white_is_castled = False
 black_is_castled = False
+
 
 def dispBoard(board):
     # Function to display the board
@@ -83,6 +84,7 @@ def cent_cont(board):
         ret += (whiteAttackers - blackAttackers) * value[square]
     return ret
 
+
 def kingSafety(board):
     surrounding = [[7,8,9],[-1,0,1],[-9, -8, -7]]
     white_king_index = board.king(chess.WHITE)
@@ -98,6 +100,7 @@ def kingSafety(board):
                 continue
     return ret
 
+
 def isCastled():
     ret = 0
     if(white_is_castled):
@@ -106,9 +109,10 @@ def isCastled():
         ret -= 3
     return ret
 
-def mobiltity(board):
-    temp = [i for i in board.legal_moves]
-    return len(temp)
+
+def mobility(board):
+    return len(list(board.legal_moves))
+
 
 def gameOver(board):
     if(board.is_checkmate()):
@@ -119,6 +123,7 @@ def gameOver(board):
             return -100*(A + B + C)
     else:
         return 0
+
 
 def ev_func(board):
     # The evaluation function J(x)
@@ -138,6 +143,7 @@ def grad(board):
     # Gradient of J(x)
     return [material(board), cent_cont(board), kingSafety(board)]
 
+
 def generateReward(board, move, count = 1): 
     # Assigns reward for each move based on depth
     brd = board.copy()
@@ -146,7 +152,7 @@ def generateReward(board, move, count = 1):
         if(brd.is_checkmate()):
             return ev_func(brd)
         temp = []
-        print("Black loop 1")
+        print("BLACK LOOP 1")
         for BlackMove in brd.legal_moves:
             brd.push_san(str(BlackMove))
             temp.append(ev_func(brd))
@@ -175,6 +181,7 @@ def generateReward(board, move, count = 1):
         brd.pop()
         print(black_eval)
         return min(black_eval)
+
 
 def simple_terminal_engine():
     # This function allows the user to play chess with the engine
