@@ -15,7 +15,7 @@ The goal of this project is to create a chess engine that can play at the level 
 
 ## Collaborators
 
-- [Collaborator 1: Harshit Prahant Dhanwalkar](https://github.com/Harshit-Dhanwalkar)
+- [Collaborator 1: Harshit Prashant Dhanwalkar](https://github.com/Harshit-Dhanwalkar)
 - [Collaborator 2: Ganesh Arvindh](https://github.com/Phoenix-rd)
 
 ## Getting Started
